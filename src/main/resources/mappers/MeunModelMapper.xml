@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.activititest.mapper.MeunModelMapper">
+  <resultMap id="BaseResultMap" type="com.example.activititest.po.MeunModel">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="menu_name" jdbcType="VARCHAR" property="label" />
+    <result column="menu_id" jdbcType="INTEGER" property="menuId" />
+    <result column="materials_id" jdbcType="VARCHAR" property="materialsId" />
+    <result column="parent_id" jdbcType="INTEGER" property="parentId" />
+  </resultMap>
+
+  <select id="getAllMeun" resultMap="BaseResultMap">
+    SELECT * FROM menu_table
+  </select>
+
+  <select id="getMeunById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    SELECT * FROM menu_table WHERE parent_id = #{pid}
+  </select>
+
+  <select id="selectAllNotParent" resultMap="BaseResultMap">
+    SELECT * FROM menu_table where parent_id!= 0
+  </select>
+
+  <update id="updateMenuById" parameterType="java.lang.Integer">
+    UPDATE menu_table SET parent_id = #{newParentId} WHERE id = #{id}
+  </update>
+</mapper>

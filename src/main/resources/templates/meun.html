@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>菜单</title>
+</head>
+<link rel="stylesheet" href="/element-ui/css/element.css">
+<body>
+<div id="app">
+    <el-tree
+            :data="data"
+            :props="defaultProps"
+            @node-click="handleNodeClick"
+            @node-drop="handleNodeDrop"
+            :draggable="draggable"
+            :default-expand-all="expandAll"
+    >
+
+    </el-tree>
+</div>
+</body>
+<script type="application/javascript" src="/js/vue.min.js"></script>
+<script type="application/javascript" src="/element-ui/js/element.js"></script>
+<script src="/js/Axios.min.js"></script>
+<script src="/js/http.utils.js"></script>
+<script src="/js/common.utils.js"></script>
+<script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                data: [],
+                defaultProps: {
+                    children: 'children',
+                    label: 'label'
+                },
+                draggable: 'true',
+                expandAll:'true',
+                url:"http://115.159.197.191:8080/"
+            }
+        },
+        created() {
+            this.getMeunData();
+        },
+        methods: {
+            getMeunData(){
+                var _this = this;
+                HttpUtils.get(_this.url + "meunData", {},
+                    function (resp) {
+                        if (resp.data.code === 1) {
+                            _this.data = resp.data.data;
+                        }
+                    },
+                    function () {
+
+                    })
+            },
+            handleNodeClick(data) {
+                //console.log(data);
+            },
+            handleNodeDrop(draggingNode, dropNode, dropType, ev) {
+                var _this = this;
+                //被拖拽节点的id
+                const draggingNodeId = draggingNode.data.id;
+                //进入节点的id
+                const dropNodeId = dropNode.data.id;
+                HttpUtils.get(_this.url + "updateMenuById",{id:draggingNodeId,newParentId:dropNodeId},
+                function (resp) {
+                    if(resp.data.code === 1){
+                        _this.$message({
+                            message: '修改成功',
+                            type: 'success'
+                        });
+                        _this.getMeunData();
+                    }
+                },
+                function () {
+
+                })
+                console.log(draggingNodeId,dropNodeId);
+                console.log(draggingNode,dropNode);
+                // console.log("进入节点的id" + dropNodeId)
+                // console.log("被拖拽节点" + draggingNodeMsg)
+                // console.log("进入节点" + dropNodeMsg)
+            },
+           /* stringJSON(obj) {
+                try {
+                    const seen = [];
+                    const json = JSON.stringify(obj, function (key, val) {
+                        if (typeof val == "object") {
+                            if (seen.indexOf(val) >= 0) return;
+                            seen.push(val)
+                        }
+                        return val;
+                    });
+                    return json;
+                } catch (e) {
+                    return e;
+                }
+            },
+            //处理节点id
+            handelNodeId(obj){
+                let handelId = "";
+                const id = obj[6] + obj[7];
+                if(id.indexOf(",")>-1){
+                    handelId = id.replace(",","");
+                }else{
+                    handelId = id;
+                }
+                return handelId;
+            }*/
+        }
+    })
+</script>
+</html>

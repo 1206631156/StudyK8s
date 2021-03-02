@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<th:block th:with="baseUrl = ${#httpServletRequest.getScheme() + '://' + #httpServletRequest.getServerName() + ':' + #request.getServerPort()  + #request.getContextPath() + '/'} "></th:block>
+<link rel="stylesheet" href="/element-ui/css/element.css">
+<body>
+<div id="app">
+    <template>
+        <el-tabs type="border-card">
+            <el-tab-pane label="流程模型定义">
+                <div id="search_div" style="margin: 5px 0;">
+                    <el-input placeholder="请输入模型类型" prefix-icon="el-icon-search" size="small" v-model="model_type"
+                              clearable style="width:200px;">
+                    </el-input>
+                    <el-button type="primary" size="small" @click="getProcessModelList" icon="el-icon-search">搜索</el-button>
+                    <el-button type="primary" size="small" @click="createProcessModel">新建流程模型</el-button>
+                </div>
+                <el-table :data="data_list" border :height="table_height" style="width: 100%" :header-cell-style="{background:'#eef1f6',color:'#606266'}" @selection-change="handleSelectionChange">
+                    <el-table-column type="selection"  width="55"></el-table-column>
+                    <el-table-column align="center" prop="id" label="模型Id" fixed="left" width="150"></el-table-column>
+                    <el-table-column align="center" prop="name" label="模型名称" fixed="left" width="200"></el-table-column>
+                    <el-table-column align="center" prop="key" label="KEY" fixed="left" width="200"></el-table-column>
+                    <el-table-column align="center" prop="category" label="模型分类" fixed="left" width="200"></el-table-column>
+                    <el-table-column align="center" prop="createTime" label="创建时间" fixed="left" width="250"></el-table-column>
+                    <el-table-column align="center" label="操作" fixed="right">
+                        <template slot-scope="scope">
+                            <el-button type="primary" size="mini" @click="onlineDesign(scope.row.id)">在线设计</el-button>
+                            <el-button type="primary" size="mini" @click="deployModel(scope.row.id)">部署</el-button>
+                            <el-button type="primary" size="mini" @click="exportModel(scope.row.id)">导出</el-button>
+                            <el-button type="primary" size="mini" @click="delProcessModel(scope.row.id)">删除模型</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <div id="pagination" style="text-align: center; margin: 10px 0;">
+                    <el-pagination
+                            background
+                            @size-change="handleSizeChange"
+                            @current-change="handleCurrentChange"
+                            :current-page="currentPage"
+                            :page-sizes="[10, 20, 30, 100]"
+                            :page-size="pageSize"
+                            layout="total, sizes, prev, pager, next, jumper"
+                            :total="totalNum">
+                    </el-pagination>
+                </div>
+            </el-tab-pane>
+            <el-tab-pane label="已部署流程">
+                <div style="margin: 5px 0;">
+                    <el-input placeholder="请输入流程类型" prefix-icon="el-icon-search" size="small" v-model="process_type"
+                              clearable style="width:200px;">
+                    </el-input>
+                    <el-button type="primary" size="small" @click="getProcesslList" icon="el-icon-search">搜索</el-button>
+                </div>
+                <el-table :data="process_data_list" border :height="table_height" style="width: 100%" :header-cell-style="{background:'#eef1f6',color:'#606266'}">
+
+                </el-table>
+            </el-tab-pane>
+        </el-tabs>
+
+        <!-- 新建流程模型弹框 -->
+        <el-dialog title="新建模型" :visible.sync="dialogFormVisible">
+            <el-form :model="processModelForm">
+                <el-form-item label="模型名称" :label-width="120">
+                    <el-input v-model="processModelForm.name" clearable ></el-input>
+                </el-form-item>
+                <el-form-item label="KEY" :label-width="120">
+                    <el-input v-model="processModelForm.key" clearable ></el-input>
+                </el-form-item>
+                <el-form-item label="模型分类" :label-width="120">
+                    <el-input v-model="processModelForm.category" clearable ></el-input>
+                </el-form-item>
+                <el-form-item label="模型描述" :label-width="120">
+                    <el-input type="textarea" v-model="processModelForm.description"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="create">确定</el-button>
+                <el-button type="primary" @click="dialogFormVisible = false">取消</el-button>
+            </div>
+        </el-dialog>
+    </template>
+</div>
+
+</body>
+
+<script type="application/javascript" src="/js/vue.min.js"></script>
+<script type="application/javascript" src="/element-ui/js/element.js"></script>
+<script src="/js/Axios.min.js"></script>
+<script src="/js/http.utils.js"></script>
+<script src="/js/common.utils.js"></script>
+<script th:inline="javascript" type="text/javascript">
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                model_type:'',
+                data_list:[],
+                table_height:800,
+                totalNum:0,
+                currentPage:1,
+                pageSize:10,
+                dialogFormVisible:false,
+                processModelForm:{
+                    name:'',
+                    key:'',
+                    description:'',
+                    category:''
+                },
+                //baseUrl:'http://115.159.197.191:8080/',
+                baseUrl:'http://localhost:8080/',
+                process_type:'',
+                process_data_list:[],
+                multipleSelection:[]
+            }
+        },
+        created() {
+            var _this = this;
+            _this.getProcessModelList(true);
+        },
+        methods: {
+            getProcessModelList(isLodding){
+                var _this = this;
+                var loading = null;
+                if (isLodding) {
+                    loading = _this.$loading({
+                        lock: true,
+                        text: '信息加载中……',
+                        spinner: 'el-icon-loading',
+                        background: 'rgba(0, 0, 0, 0.7)'
+                    });
+                }
+                var url = _this.baseUrl + "model/list";
+                var param ={modelName:_this.processModelForm.name,startPage:_this.currentPage,pageSize:_this.pageSize}
+                HttpUtils.get(url,param,
+                function (resp) {
+                    if(resp.data.code === 1){
+                        _this.totalNum = resp.data.data.total;
+                        _this.data_list = resp.data.data.data; //TODO 解决一下多个data的问题
+                        loading.close();
+                    }
+                },
+                function (err) {
+
+                })
+            },
+            createProcessModel(){
+                this.dialogFormVisible = true;
+            },
+            create(){
+                var _this = this;
+                var url = _this.baseUrl + "model/save";
+                HttpUtils.post(url,_this.processModelForm,
+                function (resp) {
+                    console.log(resp.data.code);
+                    if(resp.data.code === 1){
+                        _this.$message({
+                            message: '新增成功',
+                            type: 'success'
+                        });
+                        _this.processModelForm.name = '';
+                        _this.processModelForm.description = '';
+                        _this.processModelForm.key = '';
+                        _this.processModelForm.category = '';
+                        _this.dialogFormVisible = false;
+                        _this.getProcessModelList(true);
+                    }
+                },
+                function () {
+
+                })
+            },
+            getProcesslList(){
+                var _this = this;
+                _this.getProcessModelList(true);
+            },
+            handleSizeChange: function (val) {
+                this.pageSize = val;
+                this.getProcessModelList(true);
+            },
+            handleCurrentChange: function (val) {
+                this.currentPage = val;
+                this.getProcessModelList(true);
+            },
+            handleSelectionChange(val){
+                var _this = this;
+                _this.multipleSelection = val;
+            },
+            onlineDesign(modelId){
+                var _this = this;
+                var url = _this.baseUrl +
+                    "modeler.html?modelId=" + modelId;
+                window.open(url,"流程设计");
+            },
+            deployModel(modelId){
+                var _this = this;
+                var url = _this.baseUrl + "model/deploy";
+                HttpUtils.get(url,{id:modelId},
+                function (resp) {
+                    if(resp.data.code === 1){
+                        _this.$message({
+                            message: resp.data.msg,
+                        });
+                    }
+                },
+                function () {
+
+                })
+            },
+            exportModel(modelId){
+                var _this = this;
+                var url = _this.baseUrl + "model/export?id=" + modelId;
+                window.open(url);
+            },
+            delProcessModel(modelId){
+                var _this = this;
+                var url = _this.baseUrl + "model/delete";
+                HttpUtils.post(url,{id:modelId},
+                function (resp) {
+                    if(resp.data.code === 1){
+                        _this.$message({
+                            message: resp.data.msg,
+                        });
+                        _this.getProcessModelList(true);
+                    }
+                },
+                function () {
+
+                })
+            },
+            batchDelProcessModel(){
+                var _this = this;
+                var url = _this.baseUrl + "model/batchDelete";
+                HttpUtils.post(url,{ids:_this.multipleSelection},
+                    function (resp) {
+                        if(resp.data.code === 1){
+                            _this.$message({
+                                message: resp.data.msg,
+                            });
+                            _this.getProcessModelList(true);
+                        }
+                    },
+                    function () {
+
+                    })
+            }
+        }
+    })
+</script>
+</html>
