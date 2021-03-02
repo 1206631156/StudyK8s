@@ -1,0 +1,74 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: pjt-test
+  namespace: pjt
+  labels:
+    app: pjt-test
+    version: v1
+    app.kubernetes.io/version: v1
+    app.kubernetes.io/name: pjttest
+  annotations:
+    sidecar.istio.io/inject: "false"
+
+spec:
+  # serviceName: gateway
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pjt-test
+      version: v1
+      app.kubernetes.io/version:  v1
+      app.kubernetes.io/name: pjttest
+  template:
+    metadata:
+      labels:
+        app: pjt-test
+        version: v1
+        app.kubernetes.io/version: v1
+        app.kubernetes.io/name: pjttest
+      annotations:
+        sidecar.istio.io/inject: "false"
+
+    spec:
+      containers:
+        - name: pjt-test
+          image: "$REGISTRY/$DOCKER_NAMESPACE/$APP_NAME:$VERSION-$BUILD_NUMBER"
+          imagePullPolicy: Always
+          command:
+            - "sh"
+            - "-c"
+            - "bin/start-dss-flow-execution-entrance.sh"
+          ports:
+            - name: svc-web
+              containerPort: 8088
+              protocol: TCP
+
+          livenessProbe:
+            initialDelaySeconds: 120
+            tcpSocket:
+              port: svc-web
+            timeoutSeconds: 20
+
+          readinessProbe:
+            initialDelaySeconds: 120
+            tcpSocket:
+              port: svc-web
+            timeoutSeconds: 20
+
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 300m
+              memory: 512Mi
+
+          volumeMounts:
+            - name: configurations
+              mountPath: /etc/nginx/conf.d/dss.conf
+              subPath: dss.conf
+      volumes:
+        - name: configurations
+          configMap:
+            name: data-center
