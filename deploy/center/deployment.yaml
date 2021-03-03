@@ -2,12 +2,12 @@ apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   name: pjt-test
-  namespace: pjt
+  namespace: pjt-study-pipeline-project
   labels:
     app: pjt-test
     version: v1
     app.kubernetes.io/version: v1
-    app.kubernetes.io/name: pjttest
+    app.kubernetes.io/name: pjt-study-pipeline-project
   annotations:
     sidecar.istio.io/inject: "false"
 
@@ -19,14 +19,14 @@ spec:
       app: pjt-test
       version: v1
       app.kubernetes.io/version:  v1
-      app.kubernetes.io/name: pjttest
+      app.kubernetes.io/name: pjt-study-pipeline-project
   template:
     metadata:
       labels:
         app: pjt-test
         version: v1
         app.kubernetes.io/version: v1
-        app.kubernetes.io/name: pjttest
+        app.kubernetes.io/name: pjt-study-pipeline-project
       annotations:
         sidecar.istio.io/inject: "false"
 
@@ -71,4 +71,4 @@ spec:
       volumes:
         - name: configurations
           configMap:
-            name: data-center
+            name: pjt-test

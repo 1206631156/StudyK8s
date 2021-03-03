@@ -2,11 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: pjt-test
-  namespace: pjttest
+  namespace: pjt-study-pipeline-project
   labels:
     app: pjt-test
     app.kubernetes.io/version: v1
-    app.kubernetes.io/name: pjttest
+    app.kubernetes.io/name: pjt-study-pipeline-project
   annotations:
     servicemesh.kubesphere.io/enabled: "false"
 
@@ -23,4 +23,4 @@ spec:
   selector:
     app: pjt-test
     app.kubernetes.io/version: v1
-    app.kubernetes.io/name: pjttest
+    app.kubernetes.io/name: pjt-study-pipeline-project
