@@ -5,10 +5,11 @@ metadata:
   namespace: pjt-study-pipeline-project
   labels:
     app: pjt-test
-    app.kubernetes.io/version: v1
-    app.kubernetes.io/name: pjt-study-pipeline-project
-  annotations:
-    servicemesh.kubesphere.io/enabled: "false"
+    component: pjt-test
+#    app.kubernetes.io/version: v1
+#    app.kubernetes.io/name: pjt-study-pipeline-project
+#  annotations:
+#    servicemesh.kubesphere.io/enabled: "false"
 
 spec:
   type: NodePort
@@ -22,5 +23,7 @@ spec:
 
   selector:
     app: pjt-test
-    app.kubernetes.io/version: v1
-    app.kubernetes.io/name: pjt-study-pipeline-project
+#    app.kubernetes.io/version: v1
+#    app.kubernetes.io/name: pjt-study-pipeline-project
+    component: pjt-test
+    tier: backend

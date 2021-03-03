@@ -5,11 +5,13 @@ metadata:
   namespace: pjt-study-pipeline-project
   labels:
     app: pjt-test
-    version: v1
-    app.kubernetes.io/version: v1
-    app.kubernetes.io/name: pjt-study-pipeline-project
-  annotations:
-    sidecar.istio.io/inject: "false"
+    #version: v1
+    component: pjt-test
+    tier: backend
+    #app.kubernetes.io/version: v1
+    #app.kubernetes.io/name: pjt-study-pipeline-project
+#  annotations:
+#    sidecar.istio.io/inject: "false"
 
 spec:
   # serviceName: gateway
@@ -17,18 +19,22 @@ spec:
   selector:
     matchLabels:
       app: pjt-test
-      version: v1
-      app.kubernetes.io/version:  v1
-      app.kubernetes.io/name: pjt-study-pipeline-project
+      #version: v1
+      component: pjt-test
+      tier: backend
+      #app.kubernetes.io/version:  v1
+      #app.kubernetes.io/name: pjt-study-pipeline-project
   template:
     metadata:
       labels:
         app: pjt-test
-        version: v1
-        app.kubernetes.io/version: v1
-        app.kubernetes.io/name: pjt-study-pipeline-project
-      annotations:
-        sidecar.istio.io/inject: "false"
+        #version: v1
+        component: pjt-test
+        tier: backend
+#        app.kubernetes.io/version: v1
+#        app.kubernetes.io/name: pjt-study-pipeline-project
+#      annotations:
+#        sidecar.istio.io/inject: "false"
 
     spec:
       containers:
@@ -39,22 +45,32 @@ spec:
             - "sh"
             - "-c"
             - "bin/start-dss-flow-execution-entrance.sh"
+#          ports:
+#            - name: svc-web
+#              containerPort: 8088
+#              protocol: TCP
           ports:
-            - name: svc-web
-              containerPort: 8088
+            - containerPort: 8088
               protocol: TCP
 
-          livenessProbe:
-            initialDelaySeconds: 120
-            tcpSocket:
-              port: svc-web
-            timeoutSeconds: 20
+#          livenessProbe:
+#            initialDelaySeconds: 120
+#            tcpSocket:
+#              port: svc-web
+#            timeoutSeconds: 20
 
+#          readinessProbe:
+#            initialDelaySeconds: 120
+#            tcpSocket:
+#              port: svc-web
+#            timeoutSeconds: 20
           readinessProbe:
-            initialDelaySeconds: 120
-            tcpSocket:
-              port: svc-web
-            timeoutSeconds: 20
+            httpGet:
+              path: /
+              port: 8088
+            timeoutSeconds: 10
+            failureThreshold: 30
+            periodSeconds: 5
 
           resources:
             limits:
