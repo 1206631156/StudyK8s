@@ -18,7 +18,7 @@ spec:
       port: 8088
       protocol: TCP
       targetPort: 8088
-      nodePort: 32501
+      nodePort: 32555
 
   selector:
     app: pjt-test
