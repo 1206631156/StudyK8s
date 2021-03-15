@@ -47,4 +47,9 @@ public class MenuServiceImpl extends ServiceImpl<MeunModelMapper,MeunModel> impl
     public void updateMenuById(Integer id, Integer newParentId) {
         meunModelMapper.updateMenuById(id,newParentId);
     }
+
+    public static void main(String[] args) {
+        String osName = "linux";
+        System.err.println(osName.indexOf("linux"));
+    }
 }

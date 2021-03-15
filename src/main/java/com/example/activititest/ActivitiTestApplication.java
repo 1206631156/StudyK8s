@@ -4,12 +4,12 @@ import org.activiti.spring.boot.SecurityAutoConfiguration;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
  * 配置mybatis扫描包 去除exclude = SecurityAutoConfiguration.class ，
  * org.activiti.spring.boot.SecurityAutoConfiguration会导致
  * Invocation of init method failed; nested exception is java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy
+ * @author Thunderobot
  */
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 @MapperScan("com.example.activititest.mapper")

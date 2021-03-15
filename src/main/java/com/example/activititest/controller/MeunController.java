@@ -58,4 +58,9 @@ public class MeunController {
         }
         return ResultUtils.getFail(null);
     }
+
+    @RequestMapping("/osName")
+    public Object osName(){
+        return System.getProperty("os.name").toLowerCase();
+    }
 }
